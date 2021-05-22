@@ -1,0 +1,190 @@
+<style type="text/css">
+	#menu { 
+       margin: 0; 
+       padding: 0; 
+  } 
+	#menu li { 
+       display: inline; /* affichage horizontal */ 
+  } 
+
+
+  .bouton {
+    margin: 2px;
+    outline: none;
+    padding: 10px;
+    background-color: #F1F1F1;
+    cursor: pointer;
+    border: 1px solid #DDD;
+  }
+  /* Style the active class, and buttons on mouse-over */
+  .actif, .bouton:hover {
+    background-color: #006064;
+    color: white;
+  }
+
+  .input-field.input-outlined > input {
+  border: 2px solid #eee;
+  padding: 2px 10px 2px;
+  width: calc(100% - 2rem);
+  float: none;
+  display: block;
+  border-radius: 4px;
+  transition: box-shadow, border-color 0.15s;
+}
+.input-field.input-outlined > input:focus:not([readonly]) {
+  border-color: #26a69b;
+  box-shadow: 0 1px 0 0px #26a69b;
+}
+.input-field.input-outlined > label {
+  left: 27px;
+  display: inline-flex;
+  width: auto !important;
+}
+.input-field.input-outlined > label.active {
+  background: white;
+  border-left: 2px solid white;
+  border-right: 2px solid white;
+  transform: translateY(-2rem);
+  color:black;
+  top: 0rem;
+}
+</style>
+
+
+{{ $MailCol := .MailCol }}
+{{ $SheetName := .SheetName}}
+{{ $FileName := .FileName}}
+
+<div class="container">
+
+<nav class="teal darken-4"><a href="/index" class="brand-logo center">Envoi d'émails à partir d'un fichier excel (xlsx)</a></nav><br>
+  
+	<p><center>
+		 <ul id="menu"> 
+		{{ range $index, $name := .SheetList }}
+			{{ if eq $SheetName $name }}
+				<li><span class="bouton actif">{{ $name }} </span></li>
+			{{ else }}
+				<li><a href="/uploadHandler?SheetName={{$name}}&FileName={{$FileName}}"><span class="bouton">{{ $name }}</span></a></li>
+			{{ end }}
+		{{ end }}
+		</ul>
+	</center></p>
+  {{ if eq .EmptySheet "N"}}
+	<form action="mailSender" method="POST" onsubmit="return Validate()">
+		<input type="hidden" name="FileName" value="{{.FileName}}">
+		<input type="hidden" name="SheetName" value="{{.SheetName}}">
+		<input type="hidden" name="ColumnsMapJSON" value="{{.ColumnsMapJSON}}">
+    <input type="hidden" name="email" id="email" value="">
+    <input type="hidden" name="password" id="password" value="">
+    
+	<div class="row">
+		<div class="col s5">
+		  Choisir la colonne contenant les mails des destinataires:
+		  <select class="browser-default" name = "MailColumn">
+		    <option value="" disabled>Choisir la colonne</option>
+		    	{{ range .Columns }}
+		     		{{ if eq .ColName $MailCol }} <option value = "{{.ColId}}" selected> {{.ColName}} </option> 
+		     		{{ else }} <option value = "{{.ColId}}" > {{.ColName}} </option> 
+		     		{{ end }}
+				{{ end }}
+		  </select>
+		</div>
+	</div>
+
+	<div class="row">
+	<div class="col input-field input-outlined s6">
+          <input id="Object" type="text" class="validate" name="Object">
+          <label for="Object">Objet</label>
+    </div>
+	</div>
+
+
+    <div class="row">
+      <div class="input-field col s8">
+    		Cliquer sur l'un des bouttons pour inserer les contenus des cellules correspondantes dans les messages.</br>
+    		<div id = "colonnes">
+    			{{ range .Columns }}
+         			<a class="waves-effect grey waves-light btn-small" onclick="insertCol('{{.ColName}}')">{{.ColName}}</a>
+    			{{ end }}</br>
+    		</div>
+        	<textarea id="editor" name="Content"></textarea>
+      </div>
+      <div class="input-field col s8">
+        <label>
+          <input type="checkbox" class="filled-in" checked name="NoReply" />
+          <span>Ajouter à la fin le texte: Ce mail a été envoyé automatiquement, veuillez ne pas répondre. </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- <div class="row">
+    	<div class="input-field col s8">
+	      <label>
+	        <input type="checkbox" class="filled-in" checked name="NoReply" />
+	        <span>Ajouter à la fin le texte: Ce mail a été envoyé automatiquement, veuillez ne pas répondre. </span>
+	      </label>
+  		</div>
+    </div> -->
+
+    <div class="row">
+    	<div class="col s4">
+    		<button class="btn waves-effect waves-light" type="submit" name="action"> Envoyer </button>
+    	</div>
+    </div>
+	</form>
+  {{ else }}
+    <p><CENTER><h4> La feuille sélectionnée est vide </h4></CENTER></p>
+  {{ end }}
+</div>
+
+
+<script type="text/javascript">
+    $('#editor').trumbowyg({
+    	btns: [
+        ['viewHTML'],
+        ['undo', 'redo'], // Only supported in Blink browsers
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['link'],
+        ['unorderedList', 'orderedList'],
+        ['horizontalRule'],
+        ['removeformat'],
+        ['fullscreen']
+    	],
+    	minimalLinks: true
+
+     });
+
+function insertCol(col) {
+	$('#editor').trumbowyg('execCmd', {
+		cmd: 'insertText',
+		param: '{'+'{'+col+'}'+'}',
+		forceCss: false,
+	});
+}
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+function Validate() {
+  document.getElementById("email").value = getCookie("email");
+  document.getElementById("password").value = getCookie("password")
+  return true
+}
+</script>
+</body>
+</html>

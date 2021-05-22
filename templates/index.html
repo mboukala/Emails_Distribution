@@ -1,0 +1,149 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+
+<script type="text/javascript">
+
+function setCookie(cname,cvalue,exdays) {
+  var d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  var expires = "expires=" + d.toGMTString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+function checkCookie() {
+  var user=getCookie("email");
+  if (user != "") {
+    document.getElementById("email").value = user
+  } else document.getElementById("email").value = ""
+  var pass=getCookie("password");
+  if (pass != "") {
+    document.getElementById("password").value = pass
+  } else document.getElementById("password").value = ""
+}
+
+function Validate() {
+  if (document.getElementById("myfile").value == "") {
+    alert("Fichier excel obligatoire")
+    return false
+  } else {
+    var remember = document.getElementById("remember").value
+    if (remember == "on") {
+      var email = document.getElementById("email").value
+      setCookie("email", email, 1)    
+      var password = document.getElementById("password").value
+      setCookie("password", password, 1)
+    } else {
+      setCookie("email", "", 1)
+      setCookie("password", "", 1)
+    }
+    return true
+  }
+}
+
+</script>
+
+<body  onload="checkCookie()">        
+<div class="container">
+
+<nav class="teal darken-4"><a href="/index" class="brand-logo center">Envoi d'émails à partir d'un fichier excel (xlsx)</a></nav><br><br>
+
+<form enctype="multipart/form-data"
+      action="/uploadHandler"
+      method="post" onsubmit="return Validate()">
+
+<div class="row">
+    <div class="col s4 offset-s1">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Un compte Gmail est nécessaire, il sera utilisé pour l'envoie des émails. Les données introduites ne sont pas enregistrées.</p>
+          <p>Si vous cochez '<b>se souvenir de ce compte</b>', les informations relatives à ce compte seront alors enregistrées dans votre navigateur.</p>
+        </div>
+      </div>
+
+      <div class="card teal lighten-4">
+        <div class="card-content white-text">
+          <p><a href="/help" >Comment autoriser cette application à utiliser votre compte Gmail</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s6">
+      <div class="card white">
+        <div class="card-content">
+          <center> Donner le compte gmail qui servira pour l'envoi des émails</center>
+          <p>
+          <div class="input-field col s10 offset-s1">
+            <input id="email" name="email" type="email" class="validate">
+            <label for="email">Email</label>
+            <!-- <span class="helper-text" data-error="wrong mail format" data-success="right mail"></span>  -->
+          </div>
+          </p>
+          <p>
+            <div class="input-field col s10 offset-s1">
+              <input id="password" type="password" class="validate">
+              <label for="password">Password</label>
+            </div>
+          </p>
+          <center>
+            <label>
+              <input type="checkbox" class="filled-in" checked="checked" name="remember" id="remember" />
+              <span>Se souvenir de ce compte</span>
+            </label>
+          </center>
+        </div>
+      </div>
+    </div>
+</div>
+
+  <div class="row">
+    
+    <div class="col s4 offset-s1">
+      <div class="card blue darken-3">
+        <div class="card-content white-text">
+          Pour effectuer un publipostage et envoyer des emails, il faut introduire un fichier Excel (<b>.xlsx</b>) avec :
+          <ul> <li>- La première ligne contenant les noms des colonnes.</li>
+               <li>- Une colonne contenant les emails des destinataires. </li>
+          </ul>          
+        </div>
+      </div>
+    </div>
+
+    <div class="col s6 ">
+      <div class="card white">
+        <div class="card-content">
+          
+            <div class="file-field input-field">
+              <div class="btn">
+                <span> Choisoir le fichier Excel </span>
+                <input type="file" name="myfile", id="myfile" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+              </div>
+              <div class="file-path-wrapper">
+                <input class="file-path validate" type="text">
+              </div>
+            </div>
+          <p>
+            <button class="btn waves-effect blue waves-light" type="submit" name="action" >Valider</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+</div>
+</body>        
+</html>
